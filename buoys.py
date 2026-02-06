@@ -4,8 +4,6 @@ import requests
 import io
 
 
-vertical = False
-
 default_station = {
     'Leucadia Nearshore': 46274}
 
@@ -37,6 +35,14 @@ def get_df(id: str):
 
 class Buoy:
 
+    days = 10
+    dark = True
+    heat = True
+    min_temp = 60
+    max_temp = 75
+    palette = 'jet'
+    vertical = False
+
     def __init__(self, station: str | int = None):
 
         if isinstance(station, int):
@@ -60,25 +66,27 @@ class Buoy:
     def config(
             self,
             title_x=.45,
-            days: int = 10,
-            dark: bool = True,
-            heat: bool = True,
-            min_temp: int = 60,
-            max_temp: int = 75,
-            palette: str = 'jet',
-            vertical: bool = vertical):
+            days: int = None,
+            dark: bool = None,
+            heat: bool = None,
+            palette: str = None,
+            min_temp: int = None,
+            max_temp: int = None,
+            vertical: bool = None):
 
-        self.template = f"plotly_{'dark' if dark else 'white'}"
-        self.start = self.df.loc[2 * 24 * days, self.x]
+        self.days = days or self.days
+        self.dark = dark or self.dark
+        self.heat = heat or self.heat
+        self.palette = palette or self.palette
+        self.vertical = vertical or self.vertical
+        self.min_temp = min_temp or self.min_temp
+        self.max_temp = max_temp or self.max_temp
+        self.template = f"plotly_{'dark' if self.dark else 'white'}"
+        self.start = self.df.loc[2 * 24 * self.days, self.x]
         self.end = self.df.loc[0, self.x]
-        self.min_temp = min_temp
-        self.max_temp = max_temp
-        self.vertical = vertical
-        self.palette = palette
         self.title_x = title_x
-        self.heat = heat
 
-    def water_temp(self, heat=True):
+    def water_temp(self):
 
         xy = dict(x=self.x, y=self.wtmp)
         yx = dict(x=self.wtmp, y=self.x)
@@ -88,7 +96,7 @@ class Buoy:
             color=self.wtmp,
             color_continuous_scale=self.palette,
             range_color=[self.min_temp, self.max_temp]
-            ) if heat else dict())
+            ) if self.heat else dict())
 
         title = f'Water Temp at {self.station_name}'
         fig = px.scatter(self.df, **plot_args)
