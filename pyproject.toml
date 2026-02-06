@@ -5,16 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "buoys"
 version = "0.1.0"
-description = "Plot buoy data."
 requires-python = ">=3.12"
+description = "Plot buoy data."
 dependencies = ["plotly", "pandas", "requests"]
     
-authors = [{
-    name = "Luke Simmons",
-    email = "contact.luke.simmoms@gmail.com"}]
-    
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 
 [project.urls]
 "Source" = "https://github.com/LukeMSimmons/buoys"
