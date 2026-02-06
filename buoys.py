@@ -105,6 +105,7 @@ class Buoy:
             title=title,
             title_x=self.title_x,
             template=self.template,
+            margin_t=50 if self.vertical else None,
             xaxis_side='top' if self.vertical else None,
             xaxis_title=None if self.vertical else self.x,
             yaxis_title=None if self.vertical else self.wtmp)
