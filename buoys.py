@@ -1,7 +1,9 @@
+from datetime import datetime
+import io
+
 import plotly.express as px
 import pandas as pd
 import requests
-import io
 
 
 default_station = {
@@ -55,9 +57,19 @@ class Buoy:
         self.x = 'Datetime'
         self.wtmp = 'Temp'
 
+        now = datetime.now()
         df = get_df(id=self.station_id)
+        dst_start = datetime(now.year, 3, 8)
+        dst_end = datetime(now.year, 11, 1)
+        dst = dst_start < now < dst_end
+        offset = 7 if dst else 8
+
         df[self.x] = df['YY'] + '-' + df['MM'] + '-' + df['DD']
         df[self.x] += ' ' + df['hh'] + ':' + df['mm'] + ':00'
+        df[self.x] = pd.to_datetime(df[self.x])
+        df[self.x] -= pd.Timedelta(hours=offset)
+        df[self.x] = df[self.x].astype(str)
+        
         df[self.wtmp] = df['WTMP'] * 9/5 + 32
 
         self.df = df
@@ -98,9 +110,10 @@ class Buoy:
             range_color=[self.min_temp, self.max_temp]
             ) if self.heat else dict())
 
-        title = f'Water Temp at {self.station_name}'
+        title = f'Water Temp at {self.station_name} '
+        title += f'- {round(self.df.at[0, self.wtmp], 1)}°F'
         fig = px.scatter(self.df, **plot_args)
-        
+
         fig.update_layout(
             title=title,
             title_x=self.title_x,
@@ -109,8 +122,8 @@ class Buoy:
             xaxis_side='top' if self.vertical else None,
             xaxis_title=None if self.vertical else self.x,
             yaxis_title=None if self.vertical else self.wtmp)
-        
+
         axis_range = fig.update_yaxes if self.vertical else fig.update_xaxes
         axis_range(range=[self.start, self.end])
-        
+
         fig.show()
