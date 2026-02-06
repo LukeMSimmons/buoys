@@ -110,26 +110,24 @@ class Buoy:
             range_color=[self.min_temp, self.max_temp]
             )if self.heat else dict())
 
-        title = f'{self.station_name} Temp '
-        title += f'- {round(self.df.at[0, self.wtmp], 1)}°F'
-        fig = px.scatter(self.df, **plot_args)
+        title = f'{self.station_name} - {round(self.df.at[0, self.wtmp], 1)}°F'
+        fig = px.scatter(self.df, title=title, **plot_args)
 
         fig.update_layout(
             template=self.template,
-            title=title,
             title_x=self.title_x,
-            title_y=.89 if self.vertical else None,
             margin_b=5 if self.vertical else None,
             margin_r=0 if self.vertical else None,
             margin_l=0 if self.vertical else None,
-            margin_t=100 if self.vertical else None,
             xaxis_side='top' if self.vertical else None,
             xaxis_title=None if self.vertical else self.x,
             yaxis_title=None if self.vertical else self.wtmp,
             plot_bgcolor=transparent if self.vertical else None,
             paper_bgcolor=transparent if self.vertical else None)
+            
 
         axis_range = fig.update_yaxes if self.vertical else fig.update_xaxes
         axis_range(range=[self.start, self.end])
 
-        fig.show()
+        show_config = dict(displayModeBar=False) if self.vertical else None
+        fig.show(config=show_config)
