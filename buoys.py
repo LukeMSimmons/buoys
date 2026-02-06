@@ -16,6 +16,8 @@ additional_stations = {
 stations = default_station | additional_stations | {
     None: list(default_station.values())[0]}
 
+transparent = 'rgba(0, 0, 0, 0)'
+
 
 def get_df(id: str):
 
@@ -65,7 +67,7 @@ class Buoy:
 
         df[self.x] = df['YY'] + '-' + df['MM'] + '-' + df['DD']
         df[self.x] += ' ' + df['hh'] + ':' + df['mm'] + ':00'
-        df[self.x] = pd.to_datetime(df[self.x])
+        df[self.x] = pd.to_datetime(df[self.x], format='ISO8601')
         df[self.x] -= pd.Timedelta(hours=offset)
         df[self.x] = df[self.x].astype(str)
         
@@ -76,7 +78,7 @@ class Buoy:
 
     def config(
             self,
-            title_x=.45,
+            title_x=.5,
             dark: bool = None,
             heat: bool = None,
             palette: str = None,
@@ -90,7 +92,7 @@ class Buoy:
         self.vertical = vertical or self.vertical
         self.min_temp = min_temp or self.min_temp
         self.max_temp = max_temp or self.max_temp
-        self.days = 7 * 2 if self.vertical else 7 * 5
+        self.days = 10 if self.vertical else 7 * 3
         self.template = f"plotly_{'dark' if self.dark else 'white'}"
         self.start = self.df.loc[2 * 24 * self.days, self.x]
         self.end = self.df.loc[0, self.x]
@@ -108,18 +110,24 @@ class Buoy:
             range_color=[self.min_temp, self.max_temp]
             )if self.heat else dict())
 
-        title = f'Water Temp at {self.station_name} '
+        title = f'{self.station_name} Temp '
         title += f'- {round(self.df.at[0, self.wtmp], 1)}°F'
         fig = px.scatter(self.df, **plot_args)
 
         fig.update_layout(
+            template=self.template,
             title=title,
             title_x=self.title_x,
-            template=self.template,
-            margin_t=50 if self.vertical else None,
+            title_y=.89 if self.vertical else None,
+            margin_b=5 if self.vertical else None,
+            margin_r=0 if self.vertical else None,
+            margin_l=0 if self.vertical else None,
+            margin_t=100 if self.vertical else None,
             xaxis_side='top' if self.vertical else None,
             xaxis_title=None if self.vertical else self.x,
-            yaxis_title=None if self.vertical else self.wtmp)
+            yaxis_title=None if self.vertical else self.wtmp,
+            plot_bgcolor=transparent if self.vertical else None,
+            paper_bgcolor=transparent if self.vertical else None)
 
         axis_range = fig.update_yaxes if self.vertical else fig.update_xaxes
         axis_range(range=[self.start, self.end])
