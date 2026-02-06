@@ -44,6 +44,7 @@ class Buoy:
     max_temp = 75
     palette = 'jet'
     vertical = False
+    test_attribute = 'thingy'
 
     def __init__(self, station: str | int = None):
 
