@@ -4,6 +4,8 @@ import requests
 import io
 
 
+vertical = False
+
 default_station = {
     'Leucadia Nearshore': 46274}
 
@@ -45,7 +47,7 @@ class Buoy:
             self.station_name = station or list(default_station.keys())[0]
 
         self.x = 'Datetime'
-        self.wtmp = 'Water Temp (F)'
+        self.wtmp = 'Temp (F)'
 
         df = get_df(id=self.station_id)
         df[self.x] = df['YY'] + '-' + df['MM'] + '-' + df['DD']
@@ -53,31 +55,34 @@ class Buoy:
         df[self.wtmp] = df['WTMP'] * 9/5 + 32
 
         self.df = df
-        self.config_plots()
+        self.config()
 
-    def config_plots(
+    def config(
             self,
+            title_x=.45,
+            days: int = 10,
             dark: bool = True,
             heat: bool = True,
             min_temp: int = 60,
             max_temp: int = 75,
             palette: str = 'jet',
-            days: int = 10,
-            title_x=.45):
+            vertical: bool = vertical):
 
         self.template = f"plotly_{'dark' if dark else 'white'}"
         self.start = self.df.loc[2 * 24 * days, self.x]
         self.end = self.df.loc[0, self.x]
         self.min_temp = min_temp
         self.max_temp = max_temp
+        self.vertical = vertical
         self.palette = palette
         self.title_x = title_x
         self.heat = heat
 
     def water_temp(self, heat=True):
 
-        title = f'Water Temperature at {self.station_name}'
-        plot_args = dict(title=title, x=self.x, y=self.wtmp)
+        xy = dict(x=self.x, y=self.wtmp)
+        yx = dict(x=self.wtmp, y=self.x)
+        plot_args = yx if self.vertical else xy
 
         plot_args.update(dict(
             color=self.wtmp,
@@ -85,8 +90,14 @@ class Buoy:
             range_color=[self.min_temp, self.max_temp]
             ) if heat else dict())
 
+        title = f'Water Temp at {self.station_name}'
         fig = px.scatter(self.df, **plot_args)
-        fig.update_layout(template=self.template, title_x=self.title_x)
-        fig.update_xaxes(range=[self.start, self.end])
+        
+        fig.update_layout(
+            template=self.template,
+            title=title, title_x=self.title_x)
+        
+        axis_range = fig.update_yaxes if self.vertical else fig.update_xaxes
+        axis_range(range=[self.start, self.end])
+        
         fig.show()
-    
