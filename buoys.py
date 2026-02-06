@@ -125,9 +125,9 @@ class Buoy:
             plot_bgcolor=transparent if self.vertical else None,
             paper_bgcolor=transparent if self.vertical else None)
             
-
-        axis_range = fig.update_yaxes if self.vertical else fig.update_xaxes
-        axis_range(range=[self.start, self.end])
+        fig.update_xaxes(autorange='reversed' if self.vertical else False)
+        update_axis = fig.update_yaxes if self.vertical else fig.update_xaxes
+        update_axis(range=[self.start, self.end])
 
         show_config = dict(displayModeBar=False) if self.vertical else None
         fig.show(config=show_config)
