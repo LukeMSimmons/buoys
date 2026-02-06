@@ -37,14 +37,12 @@ def get_df(id: str):
 
 class Buoy:
 
-    days = 10
     dark = True
     heat = True
     min_temp = 60
     max_temp = 75
     palette = 'jet'
     vertical = False
-    test_attribute = 'thingy'
 
     def __init__(self, station: str | int = None):
 
@@ -79,7 +77,6 @@ class Buoy:
     def config(
             self,
             title_x=.45,
-            days: int = None,
             dark: bool = None,
             heat: bool = None,
             palette: str = None,
@@ -87,13 +84,13 @@ class Buoy:
             max_temp: int = None,
             vertical: bool = None):
 
-        self.days = days or self.days
         self.dark = dark or self.dark
         self.heat = heat or self.heat
         self.palette = palette or self.palette
         self.vertical = vertical or self.vertical
         self.min_temp = min_temp or self.min_temp
         self.max_temp = max_temp or self.max_temp
+        self.days = 7 * 2 if self.vertical else 7 * 5
         self.template = f"plotly_{'dark' if self.dark else 'white'}"
         self.start = self.df.loc[2 * 24 * self.days, self.x]
         self.end = self.df.loc[0, self.x]
@@ -109,7 +106,7 @@ class Buoy:
             color=self.wtmp,
             color_continuous_scale=self.palette,
             range_color=[self.min_temp, self.max_temp]
-            ) if self.heat else dict())
+            )if self.heat else dict())
 
         title = f'Water Temp at {self.station_name} '
         title += f'- {round(self.df.at[0, self.wtmp], 1)}°F'
