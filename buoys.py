@@ -53,7 +53,7 @@ class Buoy:
             self.station_name = station or list(default_station.keys())[0]
 
         self.x = 'Datetime'
-        self.wtmp = 'Temp (F)'
+        self.wtmp = 'Temp'
 
         df = get_df(id=self.station_id)
         df[self.x] = df['YY'] + '-' + df['MM'] + '-' + df['DD']
@@ -102,8 +102,12 @@ class Buoy:
         fig = px.scatter(self.df, **plot_args)
         
         fig.update_layout(
+            title=title,
+            title_x=self.title_x,
             template=self.template,
-            title=title, title_x=self.title_x)
+            xaxis_side='top' if self.vertical else None,
+            xaxis_title=None if self.vertical else self.x,
+            yaxis_title=None if self.vertical else self.wtmp)
         
         axis_range = fig.update_yaxes if self.vertical else fig.update_xaxes
         axis_range(range=[self.start, self.end])
